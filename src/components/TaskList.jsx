@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 
 function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
-    const [editingIndex, setEditingIndex] = useState(null);
+    const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({});
-    const [deleteConfirmIndex, setDeleteConfirmIndex] = useState(null);
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
-    const handleEditClick = (index, task) => {
-        setEditingIndex(index);
+    const handleEditClick = (task) => {
+        setEditingId(task.id);
         setEditForm(task);
-        setDeleteConfirmIndex(null); // Close delete confirm if open
+        setDeleteConfirmId(null); // Close delete confirm if open
     };
 
     const handleEditChange = (e) => {
@@ -16,20 +16,20 @@ function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
         setEditForm({ ...editForm, [name]: value });
     };
 
-    const saveEdit = (index) => {
+    const saveEdit = (id) => {
         if (!editForm.title.trim()) return; // Basic validation
-        updateTask(index, editForm);
-        setEditingIndex(null);
+        updateTask(id, editForm);
+        setEditingId(null);
     };
 
     const cancelEdit = () => {
-        setEditingIndex(null);
+        setEditingId(null);
         setEditForm({});
     };
 
-    const handleDeleteClick = (index) => {
-        setDeleteConfirmIndex(index);
-        setEditingIndex(null); // Close edit if open
+    const handleDeleteClick = (id) => {
+        setDeleteConfirmId(id);
+        setEditingId(null); // Close edit if open
     };
 
     if (!tasks || tasks.length === 0) {
@@ -42,13 +42,13 @@ function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
 
     return (
         <div className="task-grid">
-            {tasks.map((task, index) => (
+            {tasks.map((task) => (
                 <div
-                    key={index}
+                    key={task.id}
                     className={`task-card ${task.completed ? "completed" : ""}`}
                     style={{ position: 'relative' }}
                 >
-                    {editingIndex === index ? (
+                    {editingId === task.id ? (
                         <div className="edit-mode">
                             <input
                                 name="title"
@@ -94,7 +94,7 @@ function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
                                         borderRadius: '0',
                                         marginRight: '5px'
                                     }}
-                                    onClick={() => saveEdit(index)}
+                                    onClick={() => saveEdit(task.id)}
                                 >
                                     Save
                                 </button>
@@ -125,7 +125,7 @@ function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
                             </div>
 
                             <div className="task-actions">
-                                {deleteConfirmIndex === index ? (
+                                {deleteConfirmId === task.id ? (
                                     <>
                                         <span style={{ fontSize: '12px', marginRight: '5px', color: 'var(--danger-color)' }}>Sure?</span>
                                         <button
@@ -137,7 +137,7 @@ function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
                                                 borderRadius: '0',
                                                 marginRight: '5px'
                                             }}
-                                            onClick={() => { deleteTask(index); setDeleteConfirmIndex(null); }}
+                                            onClick={() => { deleteTask(task.id); setDeleteConfirmId(null); }}
                                         >
                                             Yes
                                         </button>
@@ -149,7 +149,7 @@ function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
                                                 fontSize: '12px',
                                                 borderRadius: '0'
                                             }}
-                                            onClick={() => setDeleteConfirmIndex(null)}
+                                            onClick={() => setDeleteConfirmId(null)}
                                         >
                                             No
                                         </button>
@@ -159,7 +159,7 @@ function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
                                         <button
                                             className="btn-icon"
                                             style={{ background: 'var(--primary-color)' }}
-                                            onClick={() => handleEditClick(index, task)}
+                                            onClick={() => handleEditClick(task)}
                                             title="Edit Task"
                                         >
                                             ✏️
@@ -167,7 +167,7 @@ function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
                                         <button
                                             className="btn-icon"
                                             style={{ background: task.completed ? 'var(--text-muted)' : 'var(--success-color)' }}
-                                            onClick={() => toggleTask(index)}
+                                            onClick={() => toggleTask(task.id)}
                                             title={task.completed ? "Mark Incomplete" : "Mark Complete"}
                                         >
                                             {task.completed ? "Undo" : "✔"}
@@ -175,7 +175,7 @@ function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
                                         <button
                                             className="btn-icon"
                                             style={{ background: 'var(--danger-color)' }}
-                                            onClick={() => handleDeleteClick(index)}
+                                            onClick={() => handleDeleteClick(task.id)}
                                             title="Delete Task"
                                         >
                                             🗑

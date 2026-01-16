@@ -5,55 +5,83 @@ import TaskForm from "../components/TaskForm";
 import TaskList from "../components/TaskList";
 
 function Dashboard() {
-    const getLocalTasks = () => {
-        let tasks = localStorage.getItem("tasks");
-        if (tasks) {
-            return JSON.parse(tasks);
-        } else {
-            return [];
-        }
-    };
     const navigate = useNavigate();
-    const [tasks, setTasks] = useState(getLocalTasks());
+    const [tasks, setTasks] = useState([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
+
     useEffect(() => {
-        // Mock data or fetch
-        // fetch("https://jsonplaceholder.typicode.com/todos?_limit=5")... 
-        // For now, let's start empty or load from local storage if we wanted persistence
-        const storedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-        setTasks(storedTasks);
+        fetchTasks();
     }, []);
 
-    useEffect(() => {
-        localStorage.setItem("tasks", JSON.stringify(tasks));
-    }, [tasks]);
-
-    const addTask = (newTask) => {
-        setTasks([...tasks, { ...newTask, completed: false }]);
+    const fetchTasks = async () => {
+        try {
+            const response = await fetch("http://localhost:3000/tasks");
+            const data = await response.json();
+            setTasks(data);
+        } catch (error) {
+            console.error("Error fetching tasks:", error);
+        }
     };
 
-    const updateTask = (index, updatedTask) => {
-        const newTasks = [...tasks];
-        newTasks[index] = updatedTask;
-        setTasks(newTasks);
+    const addTask = async (newTask) => {
+        const taskToAdd = { ...newTask, completed: false };
+        try {
+            const response = await fetch("http://localhost:3000/tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(taskToAdd),
+            });
+            const data = await response.json();
+            setTasks([...tasks, data]);
+        } catch (error) {
+            console.error("Error adding task:", error);
+        }
     };
 
-    const deleteTask = (index) => {
-        setTasks(tasks.filter((_, i) => i !== index));
+    const updateTask = async (id, updatedTask) => {
+        try {
+            await fetch(`http://localhost:3000/tasks/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedTask),
+            });
+            setTasks(tasks.map((task) => (task.id === id ? { ...updatedTask, id } : task)));
+        } catch (error) {
+            console.error("Error updating task:", error);
+        }
     };
 
-    const toggleTask = (index) => {
-        setTasks(
-            tasks.map((task, i) =>
-                i === index ? { ...task, completed: !task.completed } : task
-            )
-        );
+    const deleteTask = async (id) => {
+        try {
+            await fetch(`http://localhost:3000/tasks/${id}`, {
+                method: "DELETE",
+            });
+            setTasks(tasks.filter((task) => task.id !== id));
+        } catch (error) {
+            console.error("Error deleting task:", error);
+        }
+    };
+
+    const toggleTask = async (id) => {
+        const taskToToggle = tasks.find((t) => t.id === id);
+        if (!taskToToggle) return;
+
+        const updatedTask = { ...taskToToggle, completed: !taskToToggle.completed };
+
+        try {
+            await fetch(`http://localhost:3000/tasks/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedTask),
+            });
+            setTasks(tasks.map((task) => (task.id === id ? updatedTask : task)));
+        } catch (error) {
+            console.error("Error toggling task:", error);
+        }
     };
 
     const logout = () => {
-        // localStorage.clear()
         localStorage.removeItem("authData");
-        localStorage.removeItem("tasks");
         localStorage.removeItem("user");
         navigate("/login");
     };
