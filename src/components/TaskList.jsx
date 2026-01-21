@@ -161,6 +161,7 @@ function TaskList({ tasks, deleteTask, toggleTask, updateTask }) {
                                             style={{ background: 'var(--primary-color)' }}
                                             onClick={() => handleEditClick(task)}
                                             title="Edit Task"
+                                            disabled={task.completed}
                                         >
                                             ✏️
                                         </button>

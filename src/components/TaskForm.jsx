@@ -43,7 +43,7 @@ function TaskForm({ addTask, closeForm }) {
     return (
         <div className="modal-overlay">
             <div className="modal-content">
-                <h2>Add New Task</h2>
+                <h2 style={{ marginBottom: '15px' }}>Add New Task</h2>
                 <form onSubmit={handleSubmit}>
                     <div>
                         <input
